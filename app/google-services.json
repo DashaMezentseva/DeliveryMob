@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "106533798986",
+    "firebase_url": "https://delivery-fc026.firebaseio.com",
+    "project_id": "delivery-fc026",
+    "storage_bucket": "delivery-fc026.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:106533798986:android:27649950ec151172",
+        "android_client_info": {
+          "package_name": "mezentseva.com.android.delivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "106533798986-qtteukcfduqjh4hp71rc2k9jh26v1a3i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "mezentseva.com.android.delivery",
+            "certificate_hash": "e29ce97ecc5c17d059856ad039d9e471f9be1925"
+          }
+        },
+        {
+          "client_id": "106533798986-95it7al2e64olri8ip0sfn2i35eboqd8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBONAXrOVJBfIA7OzUrPHbLyum5KJ_pSPk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "106533798986-95it7al2e64olri8ip0sfn2i35eboqd8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
