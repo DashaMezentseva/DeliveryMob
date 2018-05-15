@@ -71,7 +71,6 @@
         app:shadowEnabled="true"
         app:shadowHeight="5dp"
         app:cornerRadius="4dp"
-
         />
 
 </RelativeLayout>

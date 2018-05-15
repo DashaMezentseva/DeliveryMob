@@ -27,12 +27,16 @@ dependencies {
 
     implementation('com.github.jd-alexander:android-flat-button:v1.1')
 
-    implementation 'com.cepheuen.elegant-number-button:lib:1.0.2'
-    implementation 'com.android.support:design:27.1.1'
+    //Add Library
+
+    implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
+    implementation 'com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1'
 
     //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:27.1.1'
 
+    implementation 'com.cepheuen.elegant-number-button:lib:1.0.2'
+    implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation 'com.android.support:design:27.1.1'
     testImplementation 'junit:junit:4.12'
