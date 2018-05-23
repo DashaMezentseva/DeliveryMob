@@ -6,14 +6,24 @@ public class user {
     private String password;
     private String phone;
     private String isStaff;
+    private String secureCode;
 
     public user() {
     }
 
-    public user(String Pname, String Ppassword) {
+    public user(String Pname, String Ppassword, String secureCode) {
         name = Pname;
         password = Ppassword;
         isStaff = "false";
+        this.secureCode = secureCode;
+    }
+
+    public String getSecureCode() {
+        return secureCode;
+    }
+
+    public void setSecureCode(String secureCode) {
+        this.secureCode = secureCode;
     }
 
     public String getIsStaff() {

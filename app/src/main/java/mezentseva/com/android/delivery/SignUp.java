@@ -19,7 +19,7 @@ import mezentseva.com.android.delivery.Model.user;
 
 public class SignUp extends AppCompatActivity {
 
-    MaterialEditText edtPhone, edtName, edtPassword;
+    MaterialEditText edtPhone, edtName, edtPassword, edtSecureCode;
     Button btnSignUp;
 
     @Override
@@ -30,6 +30,7 @@ public class SignUp extends AppCompatActivity {
         edtName = (MaterialEditText)findViewById(R.id.edtName);
         edtPassword = (MaterialEditText)findViewById(R.id.edtPassword);
         edtPhone = (MaterialEditText)findViewById(R.id.edtPhone);
+        edtSecureCode = (MaterialEditText)findViewById(R.id.edtSecureCode);
 
         btnSignUp = (Button)findViewById(R.id.btnSignUp);
 
@@ -55,7 +56,9 @@ public class SignUp extends AppCompatActivity {
                                 Toast.makeText(SignUp.this, "Phone number has been already registered", Toast.LENGTH_SHORT).show();
                             } else {
                                 mDialog.dismiss();
-                                user user = new user(edtName.getText().toString(), edtPassword.getText().toString());
+                                user user = new user(edtName.getText().toString(),
+                                        edtPassword.getText().toString(),
+                                        edtSecureCode.getText().toString());
                                 table_user.child(edtPhone.getText().toString()).setValue(user);
                                 Toast.makeText(SignUp.this, "Sign up successfully!", Toast.LENGTH_SHORT).show();
                                 finish();
