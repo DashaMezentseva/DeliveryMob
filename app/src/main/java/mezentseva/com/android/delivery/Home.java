@@ -23,9 +23,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
+import io.paperdb.Paper;
 import mezentseva.com.android.delivery.Common.Common;
 import mezentseva.com.android.delivery.Interface.ItemClickListener;
 import mezentseva.com.android.delivery.Model.Category;
+import mezentseva.com.android.delivery.Service.ListenOrder;
 import mezentseva.com.android.delivery.ViewHolder.MenuViewHolder;
 
 public class Home extends AppCompatActivity
@@ -53,6 +55,8 @@ public class Home extends AppCompatActivity
         //Init Firebase
         database = FirebaseDatabase.getInstance();
         category = database.getReference("Category");
+
+        Paper.init(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -83,7 +87,16 @@ public class Home extends AppCompatActivity
         layoutManager = new LinearLayoutManager(this);
         recycler_menu.setLayoutManager(layoutManager);
 
-        loadMenu();
+        if(Common.isConnectedToInternet(this))
+            loadMenu();
+        else {
+            Toast.makeText(this, "Please check your connection!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //Register service
+        Intent service = new Intent(Home.this, ListenOrder.class);
+        startService(service);
     }
 
     private void loadMenu() {
@@ -131,7 +144,8 @@ public class Home extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
+        if (item.getItemId() == R.id.refresh)
+            loadMenu();
         return super.onOptionsItemSelected(item);
     }
 
@@ -152,6 +166,9 @@ public class Home extends AppCompatActivity
             startActivity(orderIntent);
 
         } else if (id == R.id.nav_log_out) {
+            //Delete remember user & password
+            Paper.book().destroy();
+
             //Logout
             Intent signIn = new Intent(Home.this, SignIn.class);
             signIn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

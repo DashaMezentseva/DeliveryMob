@@ -5,6 +5,7 @@ public class user {
     private String name;
     private String password;
     private String phone;
+    private String isStaff;
 
     public user() {
     }
@@ -12,6 +13,15 @@ public class user {
     public user(String Pname, String Ppassword) {
         name = Pname;
         password = Ppassword;
+        isStaff = "false";
+    }
+
+    public String getIsStaff() {
+        return isStaff;
+    }
+
+    public void setIsStaff(String isStaff) {
+        this.isStaff = isStaff;
     }
 
     public void setName(String name) {

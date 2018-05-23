@@ -15,7 +15,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
+import com.rey.material.widget.CheckBox;
 
+import io.paperdb.Paper;
 import mezentseva.com.android.delivery.Common.Common;
 import mezentseva.com.android.delivery.Model.user;
 
@@ -23,6 +25,7 @@ public class SignIn extends AppCompatActivity {
 
     EditText edtPhone, edtPassword;
     Button btnSignIn;
+    CheckBox ckbRemember;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +35,10 @@ public class SignIn extends AppCompatActivity {
         edtPassword = (MaterialEditText)findViewById(R.id.edtPassword);
         edtPhone = (MaterialEditText)findViewById(R.id.edtPhone);
         btnSignIn = (Button)findViewById(R.id.btnSignIn);
+        ckbRemember =(CheckBox)findViewById(R.id.ckbRemember);
+
+        //Init Paper
+        Paper.init(this);
 
         //Init Firebase
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -41,45 +48,59 @@ public class SignIn extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                final ProgressDialog mDialog = new ProgressDialog(SignIn.this);
-                mDialog.setMessage("Please waiting...");
-                mDialog.show();
+                if (Common.isConnectedToInternet(getBaseContext())) {
+
+                    //Save user & password
+                    if (ckbRemember.isChecked()){
+                        Paper.book().write(Common.USER_KEY,edtPhone.getText().toString());
+                        Paper.book().write(Common.PWD_KEY,edtPassword.getText().toString());
+                    }
 
 
-                table_user.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                        //Check if user doesn't exist in database
-                        if (dataSnapshot.child(edtPhone.getText().toString()).exists()) {
+                    final ProgressDialog mDialog = new ProgressDialog(SignIn.this);
+                    mDialog.setMessage("Please waiting...");
+                    mDialog.show();
 
 
-                            //get user information
-                            mDialog.dismiss();
-                            user user = dataSnapshot.child(edtPhone.getText().toString()).getValue(user.class);
-                            user.setPhone(edtPhone.getText().toString());
-                            if (user.getPassword().equals(edtPassword.getText().toString())) {
-                                Intent homeIntent = new Intent(SignIn.this, Home.class);
-                                Common.currentUser = user;
-                                startActivity(homeIntent);
-                                finish();
+                    table_user.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+
+                            //Check if user doesn't exist in database
+                            if (dataSnapshot.child(edtPhone.getText().toString()).exists()) {
+
+
+                                //get user information
+                                mDialog.dismiss();
+                                user user = dataSnapshot.child(edtPhone.getText().toString()).getValue(user.class);
+                                user.setPhone(edtPhone.getText().toString());
+                                if (user.getPassword().equals(edtPassword.getText().toString())) {
+                                    Intent homeIntent = new Intent(SignIn.this, Home.class);
+                                    Common.currentUser = user;
+                                    startActivity(homeIntent);
+                                    finish();
+                                } else {
+                                    Toast.makeText(SignIn.this, "Wrong password!", Toast.LENGTH_SHORT).show();
+                                }
                             } else {
-                                Toast.makeText(SignIn.this, "Wrong password!", Toast.LENGTH_SHORT).show();
+                                mDialog.dismiss();
+                                Toast.makeText(SignIn.this, "User doesn't exist in Database.", Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        else {
-                            mDialog.dismiss();
-                            Toast.makeText(SignIn.this, "User doesn't exist in Database.", Toast.LENGTH_SHORT).show();
+
                         }
 
-                    }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
+                        }
+                    });
+                }
+                else {
+                    Toast.makeText(SignIn.this, "Please check your connection!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
+
         });
     }
 }
