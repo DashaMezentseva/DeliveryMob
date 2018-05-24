@@ -3,7 +3,6 @@ package mezentseva.com.android.delivery;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -21,13 +20,14 @@ import android.widget.Toast;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.squareup.picasso.Picasso;
 
 import io.paperdb.Paper;
 import mezentseva.com.android.delivery.Common.Common;
 import mezentseva.com.android.delivery.Interface.ItemClickListener;
 import mezentseva.com.android.delivery.Model.Category;
-import mezentseva.com.android.delivery.Service.ListenOrder;
+import mezentseva.com.android.delivery.Model.Token;
 import mezentseva.com.android.delivery.ViewHolder.MenuViewHolder;
 
 public class Home extends AppCompatActivity
@@ -94,9 +94,14 @@ public class Home extends AppCompatActivity
             return;
         }
 
-        //Register service
-        Intent service = new Intent(Home.this, ListenOrder.class);
-        startService(service);
+        updateToken(FirebaseInstanceId.getInstance().getToken());
+    }
+
+    private void updateToken(String token) {
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        DatabaseReference tokens = db.getReference("Tokens");
+        Token data = new Token(token,false); //false because thia token send from Client app
+        tokens.child(Common.currentUser.getPhone()).setValue(data);
     }
 
     private void loadMenu() {

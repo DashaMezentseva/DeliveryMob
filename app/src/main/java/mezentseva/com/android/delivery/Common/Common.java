@@ -5,9 +5,17 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import mezentseva.com.android.delivery.Model.user;
+import mezentseva.com.android.delivery.Remote.APIService;
+import mezentseva.com.android.delivery.Remote.RetrofitClient;
 
 public class Common {
     public static user currentUser;
+
+    private static final String BASE_URL = "https://fcm.googleapis.com/";
+
+    public static APIService getFCMService(){
+        return RetrofitClient.getClient(BASE_URL).create(APIService.class);
+    }
 
     public static String convertCodeToStatus(String status) {
         if (status.equals("0"))

@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,8 +15,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
 import java.text.NumberFormat;
@@ -26,9 +32,17 @@ import java.util.Locale;
 import info.hoang8f.widget.FButton;
 import mezentseva.com.android.delivery.Common.Common;
 import mezentseva.com.android.delivery.Database.Database;
+import mezentseva.com.android.delivery.Model.MyResponse;
+import mezentseva.com.android.delivery.Model.Notification;
 import mezentseva.com.android.delivery.Model.Order;
 import mezentseva.com.android.delivery.Model.Request;
+import mezentseva.com.android.delivery.Model.Sender;
+import mezentseva.com.android.delivery.Model.Token;
+import mezentseva.com.android.delivery.Remote.APIService;
 import mezentseva.com.android.delivery.ViewHolder.CartAdapter;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class Cart extends AppCompatActivity {
 
@@ -45,23 +59,28 @@ public class Cart extends AppCompatActivity {
 
     CartAdapter adapter;
 
+    APIService mService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
 
+        //Init Service
+        mService = Common.getFCMService();
+
         //Firebase
         database = FirebaseDatabase.getInstance();
-        requests=database.getReference("Requests");
+        requests = database.getReference("Requests");
 
         //Init
-        recyclerView = (RecyclerView)findViewById(R.id.listCart);
+        recyclerView = (RecyclerView) findViewById(R.id.listCart);
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        txtTotalPrice = (TextView)findViewById(R.id.total);
-        btnPlace = (FButton)findViewById(R.id.btnPlaceOrder);
+        txtTotalPrice = (TextView) findViewById(R.id.total);
+        btnPlace = (FButton) findViewById(R.id.btnPlaceOrder);
 
         btnPlace.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,16 +98,16 @@ public class Cart extends AppCompatActivity {
 
     }
 
-    private void showAlertDialog(){
+    private void showAlertDialog() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(Cart.this);
         alertDialog.setTitle("One more step!");
         alertDialog.setMessage("Enter your address: ");
 
         LayoutInflater inflater = this.getLayoutInflater();
-        View order_address_comment = inflater.inflate(R.layout.order_address_comment,null);
+        View order_address_comment = inflater.inflate(R.layout.order_address_comment, null);
 
-        final MaterialEditText edtAddress = (MaterialEditText)order_address_comment.findViewById(R.id.edtAddress);
-        final MaterialEditText edtComment = (MaterialEditText)order_address_comment.findViewById(R.id.edtComment);
+        final MaterialEditText edtAddress = (MaterialEditText) order_address_comment.findViewById(R.id.edtAddress);
+        final MaterialEditText edtComment = (MaterialEditText) order_address_comment.findViewById(R.id.edtComment);
 
         alertDialog.setView(order_address_comment);
 
@@ -109,12 +128,16 @@ public class Cart extends AppCompatActivity {
                 );
 
                 //Submit to Firebase
-                requests.child(String .valueOf(System.currentTimeMillis()))
+                String order_number = String.valueOf(System.currentTimeMillis());
+                requests.child(order_number)
                         .setValue(request);
                 //Delete Cart
                 new Database(getBaseContext()).cleanCart();
-                Toast.makeText(Cart.this, "Thank you, Order Place", Toast.LENGTH_SHORT).show();
-                finish();
+
+                sendNotificationOrder(order_number);
+
+                //Toast.makeText(Cart.this, "Thank you, Order Place", Toast.LENGTH_SHORT).show();
+                //finish();
             }
         });
 
@@ -128,17 +151,63 @@ public class Cart extends AppCompatActivity {
         alertDialog.show();
     }
 
+    private void sendNotificationOrder(final String order_number) {
+        DatabaseReference tokens = FirebaseDatabase.getInstance().getReference("Tokens");
+        Query data = tokens.orderByChild("isServerToken").equalTo(true);
+        data.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapsot : dataSnapshot.getChildren()) {
+                    Token serverToken = postSnapsot.getValue(Token.class);
+
+                    //Create raw payload to send
+                    Notification notification = new Notification("ProductDelivery", "You have new order " + order_number);
+                    Sender content = new Sender(serverToken.getToken(), notification);
+
+                    mService.sendNotifivation(content)
+                            .enqueue(new Callback<MyResponse>() {
+                                @Override
+                                public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
+                                    //Only run when get result
+                                    if (response.code() == 200) {
+
+                                        if (response.body().success == 1) {
+                                            Toast.makeText(Cart.this, "Thank you, Order Place", Toast.LENGTH_SHORT).show();
+                                            finish();
+                                        } else {
+                                            Toast.makeText(Cart.this, "Failed!", Toast.LENGTH_SHORT).show();
+
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<MyResponse> call, Throwable t) {
+                                    Log.e("ERROR", t.getMessage());
+                                }
+                            });
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     private void loadListFood() {
         cart = new Database(this).getCarts();
-        adapter = new CartAdapter(cart,this);
+        adapter = new CartAdapter(cart, this);
         adapter.notifyDataSetChanged();
         recyclerView.setAdapter(adapter);
 
         //Calculate total price
         int total = 0;
-        for (Order order:cart)
-            total+=(Integer.parseInt(order.getPrice()))*(Integer.parseInt(order.getQuantity()));
-        Locale locale = new Locale("en","US");
+        for (Order order : cart)
+            total += (Integer.parseInt(order.getPrice())) * (Integer.parseInt(order.getQuantity()));
+        Locale locale = new Locale("en", "US");
         NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
 
         txtTotalPrice.setText(fmt.format(total));
@@ -154,11 +223,11 @@ public class Cart extends AppCompatActivity {
     private void deleteCart(int position) {
         cart.remove(position);
         new Database(this).cleanCart();
-        
-        for (Order item:cart)
+
+        for (Order item : cart)
             new Database(this).addToCart(item);
-        
+
         loadListFood();
-        
+
     }
 }
