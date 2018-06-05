@@ -78,7 +78,7 @@ public class SignIn extends AppCompatActivity {
                     mDialog.show();
 
 
-                    table_user.addValueEventListener(new ValueEventListener() {
+                    table_user.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -95,6 +95,8 @@ public class SignIn extends AppCompatActivity {
                                     Common.currentUser = user;
                                     startActivity(homeIntent);
                                     finish();
+
+                                    table_user.removeEventListener(this);
                                 } else {
                                     Toast.makeText(SignIn.this, "Wrong password!", Toast.LENGTH_SHORT).show();
                                 }

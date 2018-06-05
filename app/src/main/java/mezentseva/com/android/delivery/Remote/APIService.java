@@ -18,5 +18,5 @@ public interface APIService {
 
     )
     @POST("fcm/send")
-    Call<MyResponse> sendNotifivation(@Body Sender body);
+    Call<MyResponse> sendNotification(@Body Sender body);
 }
