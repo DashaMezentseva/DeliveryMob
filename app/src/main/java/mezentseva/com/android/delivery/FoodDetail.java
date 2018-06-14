@@ -96,7 +96,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
 
         //Get Food Id from Intent
         if(getIntent() != null)
-            foodId = getIntent().getStringExtra("FoodId");
+            foodId = getIntent().getStringExtra("foodId");
         if(!foodId.isEmpty()){
             if (Common.isConnectedToInternet(getBaseContext())) {
                 getDetailFood(foodId);
